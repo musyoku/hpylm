@@ -443,7 +443,7 @@ public:
 	double auxiliary_y_ui(double d_u, double theta_u){
 		if(_num_tables >= 2){
 			double sum_y_ui = 0;
-			for(int i = 0;i < _num_tables - 1;i++){
+			for(int i = 1;i <= _num_tables - 1;i++){
 				double denominator = theta_u + d_u * (double)i;
 				if(denominator == 0){
 					printf("\x1b[41;97m");
@@ -461,7 +461,7 @@ public:
 	double auxiliary_1_y_ui(double d_u, double theta_u){
 		if(_num_tables >= 2){
 			double sum_1_y_ui = 0;
-			for(int i = 0;i < _num_tables - 1;i++){
+			for(int i = 1;i <= _num_tables - 1;i++){
 				double denominator = theta_u + d_u * (double)i;
 				if(denominator == 0){
 					printf("\x1b[41;97m");
@@ -486,7 +486,7 @@ public:
 				// c_uwk
 				int c_uwk = tables[k];
 				if(c_uwk >= 2){
-					for(int j = 0;j < c_uwk - 1;j++){
+					for(int j = 1;j <= c_uwk - 1;j++){
 						if(j - d_u == 0){
 							printf("\x1b[41;97m");
 							printf("WARNING");
