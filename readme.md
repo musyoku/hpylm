@@ -4,6 +4,8 @@ C++によるHierarchical Pitman-Yor Language Modelの実装と文字n-gramの学
 
 以下の論文をもとに実装を行っています。
 
+素組みしただけの愚直な実装ですので高速化などは考えていません。
+
 - [A Hierarchical Bayesian Language Model based on Pitman-Yor Processes](http://www.gatsby.ucl.ac.uk/~ywteh/research/compling/acl2006.pdf)
 - [A Bayesian Interpretation of Interpolated Kneser-Ney](http://www.gatsby.ucl.ac.uk/~ywteh/research/compling/hpylm.pdf) 
 
@@ -26,7 +28,7 @@ OS X El CapitanとUbuntu 14で動作を確認しています。
 
 実行前に学習用テキストデータを`train.txt`に保存し、適当なディレクトリに入れておきます。
 
-まだモデル保存用のディレクトリもあらかじめ作成しておいてください。
+またモデル保存用のディレクトリもあらかじめ作成しておいてください。
 
 実行は
 
