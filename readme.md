@@ -11,6 +11,7 @@ C++によるHierarchical Pitman-Yor Language Modelの実装と文字n-gramの学
 
 ### 動作環境
 
+- C++11
 - Boost 1.6
 
 ### 実行
