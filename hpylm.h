@@ -140,14 +140,6 @@ public:
 		}
 		return node->Pw(word_id, _g0, _d_m, _theta_m);
 	}
-	double Pw_h(id word_id, id context_id){
-		Node* child = _root->findChildWithId(context_id);
-		if(child == NULL){
-			return _root->Pw(word_id, _g0, _d_m, _theta_m);
-		}
-		double p = child->Pw(word_id, _g0, _d_m, _theta_m);
-		return p;
-	}
 
 	double Pw(id word_id){
 		double p = _root->Pw(word_id, _g0, _d_m, _theta_m);
@@ -158,29 +150,27 @@ public:
 		if(word_ids.size() == 0){
 			return 0;
 		}
-		int w_0 = word_ids[0];
-		double p0 = _root->Pw(w_0, _g0, _d_m, _theta_m);
-		double p = p0;
-		for(int depth = 1;depth < word_ids.size();depth++){
-			vector<id> w = {word_ids[depth]};
-			vector<id> h(word_ids.begin(), word_ids.begin() + depth);
-	        double _p = Pw_h(w, h);
+		double p = 1;
+		vector<id> context_ids(word_ids.begin(), word_ids.begin() + _max_depth);
+		for(int depth = _max_depth;depth < word_ids.size();depth++){
+			id word_id = word_ids[depth];
+			double _p = Pw_h(word_id, context_ids);
 			p *= _p;
+			context_ids.push_back(word_id);
 		}
 		return p;
 	}
-	double log_Pw(vector<id> &word){
-		if(word.size() == 0){
+	double log_Pw(vector<id> &word_ids){
+		if(word_ids.size() == 0){
 			return 0;
 		}
-		int w_0 = word[0];
-		double p0 = _root->Pw(w_0, _g0, _d_m, _theta_m);
-		double p = log2(p0 + 1e-10);
-		for(int depth = 1;depth < word.size();depth++){
-			vector<id> w = {word[depth]};
-			vector<id> h(word.begin(), word.begin() + depth);
-			double _p = Pw_h(w, h);
+		double p = 0;
+		vector<id> context_ids(word_ids.begin(), word_ids.begin() + _max_depth);
+		for(int depth = _max_depth;depth < word_ids.size();depth++){
+			id word_id = word_ids[depth];
+			double _p = Pw_h(word_id, context_ids);
 			p += log2(_p + 1e-10);
+			context_ids.push_back(word_id);
 		}
 		return p;
 	}

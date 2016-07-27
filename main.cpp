@@ -59,14 +59,15 @@ void show_progress(int step, int total, double &progress){
 }
 
 void train_hpylm(Vocab* vocab, vector<wstring> &dataset, string model_dir){
-	HPYLM* hpylm = new HPYLM(3);
+	int ngram = 5;
+	HPYLM* hpylm = new HPYLM(ngram);
 	int num_chars = vocab->numCharacters();
 	hpylm->_g0 = 1.0 / (double)num_chars;
 	cout << "g0: " << hpylm->_g0 << endl;
 
 	vector<id> sentence_char_ids;
 
-	int max_epoch = 100;
+	int max_epoch = 50;
 	// int train_per_epoch = dataset.size();
 	int train_per_epoch = dataset.size();
 
@@ -82,16 +83,11 @@ void train_hpylm(Vocab* vocab, vector<wstring> &dataset, string model_dir){
 
 	printf("training in progress...\n");
 	for(int epoch = 1;epoch < max_epoch;epoch++){
-		// cout << "##########################################" << endl;
-		// cout << "EPOCH " << epoch << endl;
-		// cout << "##########################################" << endl;
 		auto start_time = chrono::system_clock::now();
 		double progress = 0.0;
 		random_shuffle(rand_perm.begin(), rand_perm.end());
 
 		for(int step = 0;step < train_per_epoch;step++){
-			// cout << "\x1b[40;97m[STEP]\x1b[49;39m" << endl;
-
 			show_progress(step, train_per_epoch, progress);
 
 			int data_index = rand_perm[step];
@@ -101,13 +97,15 @@ void train_hpylm(Vocab* vocab, vector<wstring> &dataset, string model_dir){
 				continue;
 			}
 			sentence_char_ids.clear();
-			sentence_char_ids.push_back(vocab->bosId());
+			for(int n = 0;n < ngram - 1;n++){
+				sentence_char_ids.push_back(vocab->bosId());
+			}
 			for(int i = 0;i < sentence.length();i++){
 				int id = vocab->char2id(sentence[i]);
 				sentence_char_ids.push_back(id);
 			}
 			sentence_char_ids.push_back(vocab->eosId());
-			for(int c_t_i = 0;c_t_i < sentence_char_ids.size();c_t_i++){
+			for(int c_t_i = ngram - 1;c_t_i < sentence_char_ids.size();c_t_i++){
 				if(epoch != 1){
 					bool success = hpylm->remove(sentence_char_ids, c_t_i);
 					if(success == false){
@@ -134,11 +132,10 @@ void train_hpylm(Vocab* vocab, vector<wstring> &dataset, string model_dir){
 			if(sentence.length() == 0){
 				continue;
 			}
-			// if(sentence.length() > 200){
-			// 	continue;
-			// }
 			sentence_char_ids.clear();
-			sentence_char_ids.push_back(vocab->bosId());
+			for(int n = 0;n < ngram - 1;n++){
+				sentence_char_ids.push_back(vocab->bosId());
+			}
 			for(int i = 0;i < sentence.length();i++){
 				int id = vocab->char2id(sentence[i]);
 				sentence_char_ids.push_back(id);
@@ -158,28 +155,31 @@ void train_hpylm(Vocab* vocab, vector<wstring> &dataset, string model_dir){
 
 	}
 
+	// <!-- デバッグ用
 	// すべての客を削除
-	// 1人でも客が残っていればバグっている
-	for(int step = 0;step < dataset.size();step++){
-		// cout << "\x1b[40;97m[STEP]\x1b[49;39m" << endl;
-		int data_index = rand_perm[step];
+	// 1人でも客が残っていればバグ
+	// for(int step = 0;step < dataset.size();step++){
+	// 	// cout << "\x1b[40;97m[STEP]\x1b[49;39m" << endl;
+	// 	int data_index = rand_perm[step];
 
-		wstring sentence = dataset[data_index];
-		if(sentence.length() == 0){
-			continue;
-		}
-		sentence_char_ids.clear();
-		sentence_char_ids.push_back(vocab->bosId());
-		for(int i = 0;i < sentence.length();i++){
-			int id = vocab->char2id(sentence[i]);
-			sentence_char_ids.push_back(id);
-		}
-		sentence_char_ids.push_back(vocab->eosId());
-		for(int c_t_i = 0;c_t_i < sentence_char_ids.size();c_t_i++){
-			hpylm->remove(sentence_char_ids, c_t_i);
-		}
-	}
-
+	// 	wstring sentence = dataset[data_index];
+	// 	if(sentence.length() == 0){
+	// 		continue;
+	// 	}
+	// 	sentence_char_ids.clear();
+	// 	for(int n = 0;n < ngram - 1;n++){
+	// 		sentence_char_ids.push_back(vocab->bosId());
+	// 	}
+	// 	for(int i = 0;i < sentence.length();i++){
+	// 		int id = vocab->char2id(sentence[i]);
+	// 		sentence_char_ids.push_back(id);
+	// 	}
+	// 	sentence_char_ids.push_back(vocab->eosId());
+	// 	for(int c_t_i = 0;c_t_i < sentence_char_ids.size();c_t_i++){
+	// 		hpylm->remove(sentence_char_ids, c_t_i);
+	// 	}
+	// }
+	// -->
 
 	cout << hpylm->maxDepth() << endl;
 	cout << hpylm->numChildNodes() << endl;
