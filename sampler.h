@@ -1,7 +1,6 @@
 #ifndef _sampler_
 #define _sampler_
 #include <random>
-#include <iostream>
 
 using namespace std;
 

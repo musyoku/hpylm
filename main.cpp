@@ -58,8 +58,7 @@ void show_progress(int step, int total, double &progress){
 	progress += 0.16; // for demonstration only
 }
 
-void train_hpylm(Vocab* vocab, vector<wstring> &dataset, string model_dir){
-	int ngram = 5;
+void train_hpylm(int ngram, Vocab* vocab, vector<wstring> &dataset, string model_dir){
 	HPYLM* hpylm = new HPYLM(ngram);
 	int num_chars = vocab->numCharacters();
 	hpylm->_g0 = 1.0 / (double)num_chars;
@@ -186,8 +185,8 @@ void train_hpylm(Vocab* vocab, vector<wstring> &dataset, string model_dir){
 	cout << hpylm->numCustomers() << endl;
 }
 
-void hpylm_generate_sentence(Vocab* vocab, vector<wstring> &dataset, string model_dir){
-	HPYLM* hpylm = new HPYLM(3);
+void hpylm_generate_sentence(int ngram, Vocab* vocab, vector<wstring> &dataset, string model_dir){
+	HPYLM* hpylm = new HPYLM(ngram);
 	int num_chars = vocab->numCharacters();
 	hpylm->_g0 = 1.0 / (double)num_chars;
 
@@ -200,13 +199,18 @@ void hpylm_generate_sentence(Vocab* vocab, vector<wstring> &dataset, string mode
 	vector<id> sentence_char_ids;
 	for(int s = 0;s < num_sample;s++){
 		sentence_char_ids.clear();
-		sentence_char_ids.push_back(vocab->bosId());
+		for(int n = 0;n < ngram - 1;n++){
+			sentence_char_ids.push_back(vocab->bosId());
+		}
 		for(int i = 0;i < max_length;i++){
 			id word_id = hpylm->sampleNextWord(sentence_char_ids, vocab->eosId());
 			sentence_char_ids.push_back(word_id);
 			if(word_id == vocab->eosId()){
 				break;
 			}
+		}
+		for(int n = 0;n < ngram - 1;n++){
+			sentence_char_ids.erase(sentence_char_ids.begin());
 		}
 		wcout << vocab->characters2string(sentence_char_ids) << endl;
 	}
@@ -257,7 +261,8 @@ int main(int argc, char *argv[]){
 
 	Vocab* vocab = load(filename, dataset);
 
-	train_hpylm(vocab, dataset, model_dir);
-	hpylm_generate_sentence(vocab, dataset, model_dir);
+	int ngram = 5;
+	train_hpylm(ngram, vocab, dataset, model_dir);
+	hpylm_generate_sentence(ngram, vocab, dataset, model_dir);
 	return 0;
 }
