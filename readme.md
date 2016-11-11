@@ -1,6 +1,6 @@
 ## HPYLM
 
-C++によるHierarchical Pitman-Yor Language Modelの実装と文字n-gramの学習例です。
+C++によるHierarchical Pitman-Yor Language Modelの実装です。
 
 以下の論文をもとに実装を行っています。
 
