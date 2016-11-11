@@ -31,7 +31,7 @@ public:
 	vector<bool> is_first_addition;
 	HPYLM* hpylm;
 	Model(int ngram, double g0){
-		c_printf("[*]%s\n", "VPYLMを初期化しています ...");
+		c_printf("[*]%s\n", "HPYLMを初期化しています ...");
 		hpylm = new HPYLM(ngram);
 		hpylm->set_g0(g0);
 		c_printf("[*]%s\n", (boost::format("G0 <- %lf") % g0).str().c_str());

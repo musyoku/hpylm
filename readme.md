@@ -50,7 +50,7 @@ make hpylm
 
 ```
 alice/train.txtを読み込みました（899行）
-VPYLMを初期化しています ...
+HPYLMを初期化しています ...
 G0 <- 0.000343
 Epoch 1 / 100 - 6915.4 lps - 16.060 ppl - 18072 nodes - 83251 customers
 Epoch 2 / 100 - 6862.6 lps - 16.150 ppl - 18072 nodes - 83259 customers
