@@ -10,7 +10,7 @@ public:
 	static default_random_engine rand_gen;
 
 	static double gamma(double a, double b){
-		gamma_distribution<double> distribution(a, b);
+		gamma_distribution<double> distribution(a, 1.0 / b);
 		return distribution(rand_gen);
 	}
 
@@ -34,8 +34,8 @@ public:
 	}
 };
 
-// int seed = chrono::system_clock::now().time_since_epoch().count();
-int seed = 0;
+int seed = chrono::system_clock::now().time_since_epoch().count();
+// int seed = 0;
 mt19937 Sampler::mt(seed);
 default_random_engine Sampler::rand_gen(seed);
 
