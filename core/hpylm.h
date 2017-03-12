@@ -65,6 +65,16 @@ public:
 			_beta_m.push_back(HPYLM_INITIAL_BETA);
 		}
 	}
+	~HPYLM(){
+		_delete_node(_root);
+	}
+	void _delete_node(Node* node){
+		for(auto &elem: node->_children){
+			Node* child = elem.second;
+			_delete_node(child);
+		}
+		delete node;
+	}
 	int ngram(){
 		return _depth + 1;
 	}

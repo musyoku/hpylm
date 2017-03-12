@@ -57,6 +57,10 @@ public:
 	PyHPYLM(int ngram){
 		init(ngram);
 	}
+	~PyHPYLM(){
+		delete _hpylm;
+		delete _vocab;
+	}
 	void init(int ngram){
 		setlocale(LC_CTYPE, "ja_JP.UTF-8");
 		ios_base::sync_with_stdio(false);
