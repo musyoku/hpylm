@@ -41,7 +41,7 @@ python::list list_from_vector(vector<T> &vec){
 }
 
 class PyHPYLM{
-private:
+public:
 	HPYLM* _hpylm;
 	Vocab* _vocab;
 	vector<vector<id>> _dataset_train;
@@ -51,8 +51,6 @@ private:
 	unordered_map<id, int> _word_count;
 	int _sum_word_count;
 	bool _gibbs_first_addition;
-
-public:
 	PyHPYLM(int ngram){
 		setlocale(LC_CTYPE, "ja_JP.UTF-8");
 		ios_base::sync_with_stdio(false);
@@ -157,6 +155,17 @@ public:
 			}
 		}
 		_gibbs_first_addition = false;
+	}
+	void remove_all_data(){
+		for(int data_index = 0;data_index < _dataset_train.size();data_index++){
+			if (PyErr_CheckSignals() != 0) {		// ctrl+cが押されたかチェック
+				return;
+			}
+			vector<id> &token_ids = _dataset_train[data_index];
+			for(int token_t_index = _hpylm->ngram() - 1;token_t_index < token_ids.size();token_t_index++){
+				_hpylm->remove_customer_at_timestep(token_ids, token_t_index);
+			}
+		}
 	}
 	int get_num_train_data(){
 		return _dataset_train.size();
