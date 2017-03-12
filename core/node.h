@@ -6,15 +6,9 @@
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/vector.hpp>
-#include <algorithm>
-#include <numeric>
-#include <string>
-#include <iostream>
-#include <random>
-#include <vector>
 #include <unordered_map>
-#include <cmath>
-#include <cstdlib>
+#include <string>
+#include <vector>
 #include <cassert>
 #include <fstream>
 #include "c_printf.h"

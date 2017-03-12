@@ -6,14 +6,11 @@
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/vector.hpp>
-#include <cstdlib>
 #include <unordered_map>
 #include <map>
 #include <string>
 #include <vector>
 #include <fstream>
-#include <iostream>
-#include <functional>
 #include "c_printf.h"
 #include "common.h"
 
