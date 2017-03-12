@@ -51,7 +51,13 @@ public:
 	unordered_map<id, int> _word_count;
 	int _sum_word_count;
 	bool _gibbs_first_addition;
+	PyHPYLM(){
+		init(0);
+	}
 	PyHPYLM(int ngram){
+		init(ngram);
+	}
+	void init(int ngram){
 		setlocale(LC_CTYPE, "ja_JP.UTF-8");
 		ios_base::sync_with_stdio(false);
 		locale default_loc("ja_JP.UTF-8");
@@ -59,7 +65,7 @@ public:
 		locale ctype_default(locale::classic(), default_loc, locale::ctype); //※
 		wcout.imbue(ctype_default);
 		wcin.imbue(ctype_default);
-
+		
 		_hpylm = new HPYLM(ngram);
 		_vocab = new Vocab();
 		_gibbs_first_addition = true;
@@ -107,11 +113,14 @@ public:
 		split_word_by(line_str, L' ', word_str_array);	// スペースで分割
 		if(word_str_array.size() > 0){
 			vector<id> words;
+			for(int i = 0;i < _hpylm->_depth;i++){
+				words.push_back(ID_BOS);
+			}
 			for(auto word_str: word_str_array){
 				if(word_str.size() == 0){
 					continue;
 				}
-				id token_id = _vocab->string_to_token_id(word_str);
+				id token_id = _vocab->add_string(word_str);
 				words.push_back(token_id);
 				_word_count[token_id] += 1;
 				_sum_word_count += 1;
@@ -124,14 +133,14 @@ public:
 		_hpylm->_g0 = g0;
 	}
 	void load(string dirname){
-		_vocab->load(dirname + "hpylm.vocab");
-		if(_hpylm->load(dirname + "hpylm.model")){
+		_vocab->load(dirname + "/hpylm.vocab");
+		if(_hpylm->load(dirname + "/hpylm.model")){
 			_gibbs_first_addition = false;
 		}
 	}
 	void save(string dirname){
-		_vocab->save(dirname + "hpylm.vocab");
-		_hpylm->save(dirname + "hpylm.model");
+		_vocab->save(dirname + "/hpylm.vocab");
+		_hpylm->save(dirname + "/hpylm.model");
 	}
 	void perform_gibbs_sampling(){
 		if(_rand_indices.size() != _dataset_train.size()){
@@ -173,9 +182,6 @@ public:
 	int get_num_test_data(){
 		return _dataset_test.size();
 	}
-	int get_max_depth(){
-		return _hpylm->get_max_depth();
-	}
 	int get_num_nodes(){
 		return _hpylm->get_num_nodes();
 	}
@@ -187,6 +193,15 @@ public:
 	}
 	int get_num_words(){
 		return _sum_word_count;
+	}
+	int get_hpylm_depth(){
+		return _hpylm->_depth;
+	}
+	id get_bos_id(){
+		return ID_BOS;
+	}
+	id get_eos_id(){
+		return ID_BOS;
 	}
 	python::list count_tokens_of_each_depth(){
 		unordered_map<int, int> counts_by_depth;
@@ -209,14 +224,6 @@ public:
 	}
 	void sample_hyperparameters(){
 		_hpylm->sample_hyperparams();
-	}
-	id sample_next_token(python::list &_context_token_ids){
-		std::vector<id> context_token_ids;
-		int len = python::len(_context_token_ids);
-		for(int i = 0; i<len; i++) {
-			context_token_ids.push_back(python::extract<id>(_context_token_ids[i]));
-		}
-		return _hpylm->sample_next_token(context_token_ids);
 	}
 	// データセット全体の対数尤度を計算
 	double compute_log_Pdataset_train(){
@@ -253,14 +260,30 @@ public:
 		}
 		return exp(-log_Pdataset / (double)dataset.size());
 	}
+	wstring generate_sentence(){
+		std::vector<id> context_token_ids;
+		for(int i = 0;i < _hpylm->_depth;i++){
+			context_token_ids.push_back(ID_BOS);
+		}
+		for(int n = 0;n < 1000;n++){
+			id next_id = _hpylm->sample_next_token(context_token_ids);
+			if(next_id == ID_EOS){
+				vector<id> token_ids(context_token_ids.begin() + _hpylm->_depth + 1, context_token_ids.end());
+				return _vocab->token_ids_to_sentence(token_ids);
+			}
+			context_token_ids.push_back(next_id);
+		}
+		return _vocab->token_ids_to_sentence(context_token_ids);
+	}
 };
 
 BOOST_PYTHON_MODULE(model){
-	python::class_<PyHPYLM>("hpylm", python::init<int>())
+	python::class_<PyHPYLM>("hpylm")
+	.def(python::init<>())
+	.def(python::init<int>())
 	.def("set_g0", &PyHPYLM::set_g0)
 	.def("load_textfile", &PyHPYLM::load_textfile)
 	.def("perform_gibbs_sampling", &PyHPYLM::perform_gibbs_sampling)
-	.def("get_max_depth", &PyHPYLM::get_max_depth)
 	.def("get_num_nodes", &PyHPYLM::get_num_nodes)
 	.def("get_num_customers", &PyHPYLM::get_num_customers)
 	.def("get_discount_parameters", &PyHPYLM::get_discount_parameters)
@@ -269,13 +292,16 @@ BOOST_PYTHON_MODULE(model){
 	.def("get_num_test_data", &PyHPYLM::get_num_test_data)
 	.def("get_num_types_of_words", &PyHPYLM::get_num_types_of_words)
 	.def("get_num_words", &PyHPYLM::get_num_words)
+	.def("get_hpylm_depth", &PyHPYLM::get_hpylm_depth)
+	.def("get_bos_id", &PyHPYLM::get_bos_id)
+	.def("get_eos_id", &PyHPYLM::get_eos_id)
 	.def("sample_hyperparameters", &PyHPYLM::sample_hyperparameters)
-	.def("sample_next_token", &PyHPYLM::sample_next_token)
 	.def("count_tokens_of_each_depth", &PyHPYLM::count_tokens_of_each_depth)
 	.def("compute_log_Pdataset_train", &PyHPYLM::compute_log_Pdataset_train)
 	.def("compute_log_Pdataset_test", &PyHPYLM::compute_log_Pdataset_test)
 	.def("compute_perplexity_train", &PyHPYLM::compute_perplexity_train)
 	.def("compute_perplexity_test", &PyHPYLM::compute_perplexity_test)
+	.def("generate_sentence", &PyHPYLM::generate_sentence)
 	.def("save", &PyHPYLM::save)
 	.def("load", &PyHPYLM::load);
 }

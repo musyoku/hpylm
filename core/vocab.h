@@ -36,6 +36,13 @@ private:
 public:
 	Vocab(){
 		_auto_increment = ID_EOS;
+		_string_by_token_id[ID_BOS] = L"<bos>";
+		_string_by_token_id[ID_EOS] = L"<eos>";
+	}
+	id add_string(wstring &str){
+		id token_id = string_to_token_id(str);
+		_string_by_token_id[token_id] = str;
+		return token_id;
 	}
 	id string_to_token_id(wstring &str){
 		return (id)_hash_func(str);
@@ -44,6 +51,15 @@ public:
 		auto itr = _string_by_token_id.find(token_id);
 		assert(itr != _string_by_token_id.end());
 		return itr->second;
+	}
+	wstring token_ids_to_sentence(vector<id> &token_ids){
+		wstring sentence = L"";
+		for(const auto &token_id: token_ids){
+			wstring word = token_id_to_string(token_id);
+			sentence += word;
+			sentence += L" ";
+		}
+		return sentence;
 	}
 	int num_tokens(){
 		return _string_by_token_id.size();

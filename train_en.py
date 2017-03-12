@@ -30,11 +30,12 @@ def main(args):
 	for epoch in xrange(1, args.epoch + 1):
 		start = time.time()
 		hpylm.perform_gibbs_sampling()
+		hpylm.sample_hyperparameters()
 
 		elapsed_time = time.time() - start
 		sys.stdout.write("\rEpoch {} / {} - {:.3f} sec - {} nodes - {} customers".format(epoch, args.epoch, elapsed_time, hpylm.get_num_nodes(), hpylm.get_num_customers()))		
 		sys.stdout.flush()
-		if epoch % 100 == 0:
+		if epoch % 10 == 0:
 			log_likelihood = hpylm.compute_log_Pdataset_test() 
 			perplexity = hpylm.compute_perplexity_test()
 			print "\nlog_likelihood:", int(log_likelihood)

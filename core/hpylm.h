@@ -18,7 +18,6 @@
 
 class HPYLM{
 private:
-	int _hpylm_depth;				// 最大の深さ
 	friend class boost::serialization::access;
 	template <class Archive>
 	// モデルの保存
@@ -26,7 +25,7 @@ private:
 	{
 		static_cast<void>(version); // No use
 		archive & _root;
-		archive & _hpylm_depth;
+		archive & _depth;
 		archive & _g0;
 		archive & _d_m;
 		archive & _theta_m;
@@ -37,7 +36,7 @@ private:
 	}
 public:
 	Node* _root;				// 文脈木のルートノード
-	int _max_depth;				// VPYLMへ拡張時に使う
+	int _depth;				// 最大の深さ
 	double _g0;					// ゼログラム確率
 
 	// 深さmのノードに関するパラメータ
@@ -55,8 +54,7 @@ public:
 		// 深さは0から始まることに注意
 		// 2-gramなら最大深さは1. root(0) -> 2-gram(1)
 		// 3-gramなら最大深さは2. root(0) -> 2-gram(1) -> 3-gram(2)
-		_hpylm_depth = ngram - 1;
-		_max_depth = -1;
+		_depth = ngram - 1;
 
 		_root = new Node(0);
 		_root->_depth = 0;	// ルートは深さ0
@@ -71,21 +69,21 @@ public:
 		}
 	}
 	int ngram(){
-		return _hpylm_depth + 1;
+		return _depth + 1;
 	}
 	void set_g0(double g0){
 		_g0 = g0;
 	}
 	// 単語列のindex番目の単語をモデルに追加
 	bool add_customer_at_timestep(vector<id> &token_ids, int token_t_index){
-		Node* node = find_node_by_tracing_back_context(token_ids, token_t_index, _hpylm_depth, true);
+		Node* node = find_node_by_tracing_back_context(token_ids, token_t_index, _depth, true);
 		assert(node != NULL);
 		id token_t = token_ids[token_t_index];
 		node->add_customer(token_t, _g0, _d_m, _theta_m);
 		return true;
 	}
 	bool remove_customer_at_timestep(vector<id> &token_ids, int token_t_index){
-		Node* node = find_node_by_tracing_back_context(token_ids, token_t_index, _hpylm_depth, false);
+		Node* node = find_node_by_tracing_back_context(token_ids, token_t_index, _depth, false);
 		assert(node != NULL);
 		id token_t = token_ids[token_t_index];
 		node->remove_customer(token_t);
@@ -127,8 +125,8 @@ public:
 	}
 	double compute_Pw_h(id token_id, vector<id> &context_token_ids){
 		// HPYLMでは深さは固定
-		assert(context_token_ids.size() >= _hpylm_depth);
-		Node* node = find_node_by_tracing_back_context(context_token_ids, context_token_ids.size(), _hpylm_depth, false, true);
+		assert(context_token_ids.size() >= _depth);
+		Node* node = find_node_by_tracing_back_context(context_token_ids, context_token_ids.size(), _depth, false, true);
 		assert(node != NULL);
 		return node->compute_Pw(token_id, _g0, _d_m, _theta_m);
 	}
@@ -136,10 +134,10 @@ public:
 		return _root->compute_Pw(token_id, _g0, _d_m, _theta_m);
 	}
 	double compute_Pw(vector<id> &token_ids){
-		assert(token_ids.size() >= _hpylm_depth + 1);
+		assert(token_ids.size() >= _depth + 1);
 		double mult_pw_h = 1;
-		vector<id> context_token_ids(token_ids.begin(), token_ids.begin() + _hpylm_depth);
-		for(int depth = _hpylm_depth;depth < token_ids.size();depth++){
+		vector<id> context_token_ids(token_ids.begin(), token_ids.begin() + _depth);
+		for(int depth = _depth;depth < token_ids.size();depth++){
 			id token_id = token_ids[depth];
 			mult_pw_h *= compute_Pw_h(token_id, context_token_ids);;
 			context_token_ids.push_back(token_id);
@@ -147,10 +145,10 @@ public:
 		return mult_pw_h;
 	}
 	double compute_log_Pw(vector<id> &token_ids){
-		assert(token_ids.size() >= _hpylm_depth + 1);
+		assert(token_ids.size() >= _depth + 1);
 		double sum_pw_h = 0;
-		vector<id> context_token_ids(token_ids.begin(), token_ids.begin() + _hpylm_depth);
-		for(int depth = _hpylm_depth;depth < token_ids.size();depth++){
+		vector<id> context_token_ids(token_ids.begin(), token_ids.begin() + _depth);
+		for(int depth = _depth;depth < token_ids.size();depth++){
 			id token_id = token_ids[depth];
 			sum_pw_h += log(compute_Pw_h(token_id, context_token_ids) + 1e-10);
 			context_token_ids.push_back(token_id);
@@ -158,10 +156,10 @@ public:
 		return sum_pw_h;
 	}
 	double compute_log2_Pw(vector<id> &token_ids){
-		assert(token_ids.size() >= _hpylm_depth + 1);
+		assert(token_ids.size() >= _depth + 1);
 		double sum_pw_h = 0;
-		vector<id> context_token_ids(token_ids.begin(), token_ids.begin() + _hpylm_depth);
-		for(int depth = _hpylm_depth;depth < token_ids.size();depth++){
+		vector<id> context_token_ids(token_ids.begin(), token_ids.begin() + _depth);
+		for(int depth = _depth;depth < token_ids.size();depth++){
 			id token_id = token_ids[depth];
 			sum_pw_h += log2(compute_Pw_h(token_id, context_token_ids) + 1e-10);
 			context_token_ids.push_back(token_id);
@@ -170,7 +168,7 @@ public:
 	}
 	id sample_next_token(vector<id> &context_token_ids){
 		id eos_id = ID_EOS;
-		Node* node = find_node_by_tracing_back_context(context_token_ids, context_token_ids.size(), _hpylm_depth, false, true);
+		Node* node = find_node_by_tracing_back_context(context_token_ids, context_token_ids.size(), _depth, false, true);
 		assert(node != NULL);
 		vector<id> token_ids;
 		vector<double> pw_h_array;
@@ -235,16 +233,10 @@ public:
 	}
 	// "A Bayesian Interpretation of Interpolated Kneser-Ney" Appendix C参照
 	// http://www.gatsby.ucl.ac.uk/~ywteh/research/compling/hpylm.pdf
-	void sum_auxiliary_variables_recursively(Node* node, vector<double> &sum_log_x_u_m, vector<double> &sum_y_ui_m, vector<double> &sum_1_y_ui_m, vector<double> &sum_1_z_uwkj_m, int &bottom){
+	void sum_auxiliary_variables_recursively(Node* node, vector<double> &sum_log_x_u_m, vector<double> &sum_y_ui_m, vector<double> &sum_1_y_ui_m, vector<double> &sum_1_z_uwkj_m){
 		for(auto elem: node->_children){
 			Node* child = elem.second;
 			int depth = child->_depth;
-
-			if(depth > bottom){
-				bottom = depth;
-			}
-			init_hyperparameters_at_depth_if_needed(depth);
-
 			double d = _d_m[depth];
 			double theta = _theta_m[depth];
 			sum_log_x_u_m[depth] += child->auxiliary_log_x_u(theta);	// log(x_u)
@@ -252,7 +244,7 @@ public:
 			sum_1_y_ui_m[depth] += child->auxiliary_1_y_ui(d, theta);	// 1 - y_ui
 			sum_1_z_uwkj_m[depth] += child->auxiliary_1_z_uwkj(d);		// 1 - z_uwkj
 
-			sum_auxiliary_variables_recursively(child, sum_log_x_u_m, sum_y_ui_m, sum_1_y_ui_m, sum_1_z_uwkj_m, bottom);
+			sum_auxiliary_variables_recursively(child, sum_log_x_u_m, sum_y_ui_m, sum_1_y_ui_m, sum_1_z_uwkj_m);
 		}
 	}
 	// dとθの推定
@@ -272,43 +264,11 @@ public:
 		sum_1_z_uwkj_m[0] = _root->auxiliary_1_z_uwkj(_d_m[0]);				// 1 - z_uwkj
 
 		// それ以外
-		_max_depth = 0;
-		// _max_depthは以下を実行すると更新される
-		// HPYLMでは無意味だがVPYLMで最大深さを求める時に使う
-		sum_auxiliary_variables_recursively(_root, sum_log_x_u_m, sum_y_ui_m, sum_1_y_ui_m, sum_1_z_uwkj_m, _max_depth);
-		init_hyperparameters_at_depth_if_needed(_max_depth);
+		sum_auxiliary_variables_recursively(_root, sum_log_x_u_m, sum_y_ui_m, sum_1_y_ui_m, sum_1_z_uwkj_m);
 
-		for(int u = 0;u <= _max_depth;u++){
+		for(int u = 0;u <= _depth;u++){
 			_d_m[u] = Sampler::beta(_a_m[u] + sum_1_y_ui_m[u], _b_m[u] + sum_1_z_uwkj_m[u]);
 			_theta_m[u] = Sampler::gamma(_alpha_m[u] + sum_y_ui_m[u], _beta_m[u] - sum_log_x_u_m[u]);
-		}
-		// 不要な深さのハイパーパラメータを削除
-		int num_remove = _d_m.size() - _max_depth - 1;
-		for(int n = 0;n < num_remove;n++){
-			_d_m.pop_back();
-			_theta_m.pop_back();
-			_a_m.pop_back();
-			_b_m.pop_back();
-			_alpha_m.pop_back();
-			_beta_m.pop_back();
-		}
-	}
-	int get_max_depth(bool use_cache = true){
-		if(use_cache && _max_depth != -1){
-			return _max_depth;
-		}
-		_max_depth = 0;
-		update_max_depth_recursively(_root);
-		return _max_depth;
-	}
-	void update_max_depth_recursively(Node* node){
-		for(auto elem: node->_children){
-			Node* child = elem.second;
-			int depth = child->_depth;
-			if(depth > _max_depth){
-				_max_depth = depth;
-			}
-			update_max_depth_recursively(child);
 		}
 	}
 	int get_num_nodes(){
@@ -333,8 +293,7 @@ public:
 		_root->count_tokens_of_each_depth(map);
 	}
 	void enumerate_phrases_at_depth(int depth, vector<vector<id>> &phrases){
-		int max_depth = get_max_depth();
-		assert(depth <= max_depth);
+		assert(depth <= _depth);
 		// 指定の深さのノードを探索
 		vector<Node*> nodes;
 		_root->enumerate_nodes_at_depth(depth, nodes);
