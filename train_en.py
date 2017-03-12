@@ -11,9 +11,9 @@ def main(args):
 	assert args.filename is not None
 	assert os.path.exists(args.filename)
 	assert args.train_split is not None
-	assert args.hpylm_depth > 0
+	assert args.ngram > 0
 
-	hpylm = model.hpylm(args.hpylm_depth)
+	hpylm = model.hpylm(args.ngram)
 	hpylm.load_textfile(args.filename, args.train_split)
 	print "訓練データ数:	", hpylm.get_num_train_data() 
 	print "テストデータ数:	", hpylm.get_num_test_data()
@@ -54,7 +54,7 @@ def main(args):
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-f", "--filename", type=str, default=None, help="訓練用のテキストファイルのパス.")
-	parser.add_argument("-d", "--hpylm-depth", type=int, default=3, help="HPYLMの深さ.")
+	parser.add_argument("-n", "--ngram", type=int, default=3)
 	parser.add_argument("-e", "--epoch", type=int, default=1000, help="総epoch.")
 	parser.add_argument("-m", "--model", type=str, default="out", help="保存フォルダ名.")
 	parser.add_argument("-l", "--train-split", type=int, default=None, help="テキストデータの最初の何行を訓練データにするか.")
