@@ -1,0 +1,12 @@
+# ignore all
+*
+
+# allow any
+!*/
+!*.py
+!*.cpp
+!*.h
+!*.md
+!alice.txt
+!.gitignore
+!.makefile
