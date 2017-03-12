@@ -2,11 +2,13 @@
 *
 
 # allow any
+!dataset/
+!dataset/alice.txt
+!dataset/wiki.txt
 !*/
 !*.py
 !*.cpp
 !*.h
 !*.md
-!alice.txt
 !.gitignore
 !.makefile

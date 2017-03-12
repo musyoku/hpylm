@@ -20,7 +20,8 @@ make install
 `-f`でファイルを指定、`-l`で何行を訓練データにするかを指定します。
 
 ```
-python train_en.py -f alice.txt -l 1100
+python train_en.py -f dataset/alice.txt -l 1100
+python train_en.py -f dataset/wiki.txt -l 45000
 ```
 
 ## 生成
