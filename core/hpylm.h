@@ -147,7 +147,9 @@ public:
 		vector<id> context_token_ids(token_ids.begin(), token_ids.begin() + _depth);
 		for(int depth = _depth;depth < token_ids.size();depth++){
 			id token_id = token_ids[depth];
-			sum_pw_h += log(compute_Pw_h(token_id, context_token_ids) + 1e-10);
+			double pw_h = compute_Pw_h(token_id, context_token_ids);
+			assert(pw_h > 0);
+			sum_pw_h += log(pw_h);
 			context_token_ids.push_back(token_id);
 		}
 		return sum_pw_h;
@@ -158,7 +160,9 @@ public:
 		vector<id> context_token_ids(token_ids.begin(), token_ids.begin() + _depth);
 		for(int depth = _depth;depth < token_ids.size();depth++){
 			id token_id = token_ids[depth];
-			sum_pw_h += log2(compute_Pw_h(token_id, context_token_ids) + 1e-10);
+			double pw_h = compute_Pw_h(token_id, context_token_ids);
+			assert(pw_h > 0);
+			sum_pw_h += log2(pw_h);
 			context_token_ids.push_back(token_id);
 		}
 		return sum_pw_h;
@@ -195,38 +199,6 @@ public:
 			}
 		}
 		return token_ids.back();
-	}
-	void init_hyperparameters_at_depth_if_needed(int depth){
-		if(depth >= _d_m.size()){
-			while(_d_m.size() <= depth){
-				_d_m.push_back(HPYLM_INITIAL_D);
-			}
-		}
-		if(depth >= _theta_m.size()){
-			while(_theta_m.size() <= depth){
-				_theta_m.push_back(HPYLM_INITIAL_THETA);
-			}
-		}
-		if(depth >= _a_m.size()){
-			while(_a_m.size() <= depth){
-				_a_m.push_back(HPYLM_INITIAL_A);
-			}
-		}
-		if(depth >= _b_m.size()){
-			while(_b_m.size() <= depth){
-				_b_m.push_back(HPYLM_INITIAL_B);
-			}
-		}
-		if(depth >= _alpha_m.size()){
-			while(_alpha_m.size() <= depth){
-				_alpha_m.push_back(HPYLM_INITIAL_ALPHA);
-			}
-		}
-		if(depth >= _beta_m.size()){
-			while(_beta_m.size() <= depth){
-				_beta_m.push_back(HPYLM_INITIAL_BETA);
-			}
-		}
 	}
 	// "A Bayesian Interpretation of Interpolated Kneser-Ney" Appendix C参照
 	// http://www.gatsby.ucl.ac.uk/~ywteh/research/compling/hpylm.pdf
