@@ -1,61 +1,8 @@
-#include <iostream>
-#include <string>
-#include <vector>
-#include <fstream>
-#include <cassert>
-#include <random>
-#include <chrono>
-#include <algorithm>
-#include <map>
-#include <unordered_map> 
-#include <stdio.h>
-#include <wchar.h>
-#include <locale>
-#include "c_printf.h"
-#include "node.h"
-#include "hpylm.h"
-#include "vocab.h"
-
+#include "model.cpp"
 using namespace std;
-void test_node(){
-	int ngram = 3;
-	HPYLM* hpylm = new HPYLM(ngram);
-	hpylm->set_g0(0.01);
-	vector<id> token_ids;
-	for(int i = 0;i < 10;i++){
-		token_ids.push_back(i % 10);
-	}
-	for(int token_t_index = ngram - 1;token_t_index < token_ids.size();token_t_index++){
-		Node* node = hpylm->find_node_by_tracing_back_context(token_ids, token_t_index, ngram - 1, true);
-		if(node){
-			cout << *node << endl;
-		}
-	}
-}
-
-void test_remove_customer(){
-	int ngram = 3;
-	HPYLM* hpylm = new HPYLM(ngram);
-	hpylm->set_g0(0.01);
-	vector<id> token_ids;
-	for(int i = 0;i < 100;i++){
-		token_ids.push_back(i % 10);
-	}
-	for(int trial = 0;trial < 1000;trial++){
-		for(int t = ngram - 1;t < token_ids.size();t++){
-			hpylm->add_customer_at_timestep(token_ids, t);
-			hpylm->remove_customer_at_timestep(token_ids, t);
-		}
-	}
-	printf("depth: %d\n", hpylm->get_max_depth(false));
-	printf("# of nodes: %d\n", hpylm->get_num_nodes());
-	printf("# of customers: %d\n", hpylm->get_num_customers());
-	printf("# of tables: %d\n", hpylm->get_num_tables());
-	printf("stop count: %d\n", hpylm->get_sum_stop_counts());
-	printf("pass count: %d\n", hpylm->get_sum_pass_counts());
-}
 
 void test_train(){
+	PyHPYLM* model = new PyHPYLM(3);
 	double num_types_token = 100;
 	random_device rnd;
 	mt19937 mt(rnd());

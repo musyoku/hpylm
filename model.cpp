@@ -65,6 +65,7 @@ public:
 		_hpylm = new HPYLM(ngram);
 		_vocab = new Vocab();
 		_gibbs_first_addition = true;
+		_sum_word_count = 0;
 	}
 	void load_textfile(string filename, int train_split){
 		c_printf("[*]%s\n", (boost::format("%sを読み込んでいます ...") % filename.c_str()).str().c_str());
@@ -118,8 +119,6 @@ public:
 				_sum_word_count += 1;
 			}
 			words.push_back(ID_EOS);
-			_word_count[ID_EOS] += 1;
-			_sum_word_count += 1;
 			dataset.push_back(words);
 		}
 	}
@@ -128,7 +127,9 @@ public:
 	}
 	void load(string dirname){
 		_vocab->load(dirname + "hpylm.vocab");
-		_hpylm->load(dirname + "hpylm.model");
+		if(_hpylm->load(dirname + "hpylm.model")){
+			_gibbs_first_addition = false;
+		}
 	}
 	void save(string dirname){
 		_vocab->save(dirname + "hpylm.vocab");
@@ -151,11 +152,11 @@ public:
 			for(int token_t_index = _hpylm->ngram() - 1;token_t_index < token_ids.size();token_t_index++){
 				if(_gibbs_first_addition == false){
 					_hpylm->remove_customer_at_timestep(token_ids, token_t_index);
-					_gibbs_first_addition = true;
 				}
 				_hpylm->add_customer_at_timestep(token_ids, token_t_index);
 			}
 		}
+		_gibbs_first_addition = false;
 	}
 	int get_num_train_data(){
 		return _dataset_train.size();
