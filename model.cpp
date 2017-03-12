@@ -205,7 +205,7 @@ public:
 		return ID_BOS;
 	}
 	id get_eos_id(){
-		return ID_BOS;
+		return ID_EOS;
 	}
 	python::list count_tokens_of_each_depth(){
 		unordered_map<int, int> counts_by_depth;
