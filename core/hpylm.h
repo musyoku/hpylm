@@ -8,7 +8,6 @@
 #include <vector>
 #include <cassert>
 #include <fstream>
-#include "c_printf.h"
 #include "common.h"
 #include "sampler.h"
 #include "node.h"

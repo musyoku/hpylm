@@ -11,7 +11,6 @@
 #include <vector>
 #include <cassert>
 #include <fstream>
-#include "c_printf.h"
 #include "common.h"
 #include "sampler.h"
 
@@ -346,10 +345,7 @@ public:
 		for(auto &elem: _arrangement){
 			num += std::accumulate(elem.second.begin(), elem.second.end(), 0);
 		}
-		if(num != _num_customers){
-			c_printf("[r]%s [*]%s\n", "エラー:", "客の管理に不具合があります. num != _num_customers");
-			exit(1);
-		}
+		assert(num == _num_customers);
 		for(auto &elem: _children){
 			num += elem.second->get_num_customers();
 		}

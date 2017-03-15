@@ -3,7 +3,6 @@
 #include <iostream>
 #include <string>
 #include <unordered_map> 
-#include "core/c_printf.h"
 #include "core/node.h"
 #include "core/hpylm.h"
 #include "core/vocab.h"
@@ -75,18 +74,16 @@ public:
 		_gibbs_first_addition = true;
 		_sum_word_count = 0;
 	}
-	void load_textfile(string filename, int train_split){
-		c_printf("[*]%s\n", (boost::format("%sを読み込んでいます ...") % filename.c_str()).str().c_str());
+	bool load_textfile(string filename, int train_split){
 		wifstream ifs(filename.c_str());
 		wstring line_str;
-		if (ifs.fail()){
-			c_printf("[R]%s [*]%s", "エラー", (boost::format("%sを開けません.") % filename.c_str()).str().c_str());
-			exit(1);
+		if(ifs.fail()){
+			return false;
 		}
 		vector<wstring> lines;
 		while (getline(ifs, line_str) && !line_str.empty()){
 			if (PyErr_CheckSignals() != 0) {		// ctrl+cが押されたかチェック
-				return;
+				return false;
 			}
 			lines.push_back(line_str);
 		}
@@ -104,7 +101,7 @@ public:
 				add_test_data(line_str);
 			}
 		}
-		c_printf("[*]%s\n", (boost::format("%sを読み込みました.") % filename.c_str()).str().c_str());
+		return true;
 	}
 	void add_train_data(wstring line_str){
 		_add_data_to(line_str, _dataset_train);
