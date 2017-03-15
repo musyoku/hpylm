@@ -265,9 +265,6 @@ public:
 	int get_sum_pass_counts(){
 		return _root->sum_pass_counts();
 	}
-	void set_active_tokens(unordered_map<id, bool> &flags){
-		_root->set_active_tokens(flags);
-	}
 	void count_tokens_of_each_depth(unordered_map<int, int> &map){
 		_root->count_tokens_of_each_depth(map);
 	}

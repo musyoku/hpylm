@@ -12,4 +12,10 @@ using id = size_t;
 #define ID_BOS 0
 #define ID_EOS 1
 
+struct token_hash_func{
+	size_t operator ()(const id &token_id) const {
+		return token_id;
+	}
+};
+
 #endif
