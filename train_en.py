@@ -38,8 +38,8 @@ def main(args):
 		if epoch % 10 == 0:
 			log_likelihood = hpylm.compute_log_Pdataset_test() 
 			perplexity = hpylm.compute_perplexity_test()
-			print "\nlog_likelihood:", int(log_likelihood)
-			print "perplexity:", int(perplexity)
+			print "\nlog_likelihood:", int(log_likelihood), int(hpylm.compute_log_Pdataset_train())
+			print "perplexity:", int(perplexity), int(hpylm.compute_perplexity_train())
 			hpylm.save(args.model);
 			# CSV出力
 			csv_likelihood.append([epoch, log_likelihood])

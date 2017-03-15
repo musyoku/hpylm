@@ -18,7 +18,6 @@ using namespace std;
 
 class Vocab{
 private:
-	id _auto_increment;
 	unordered_map<id, wstring> _string_by_token_id;
 	hash<wstring> _hash_func;
 	
@@ -28,11 +27,9 @@ private:
 	{
 		static_cast<void>(version); // No use
 		archive & _string_by_token_id;
-		archive & _auto_increment;
 	}
 public:
 	Vocab(){
-		_auto_increment = ID_EOS;
 		_string_by_token_id[ID_BOS] = L"<bos>";
 		_string_by_token_id[ID_EOS] = L"<eos>";
 	}
