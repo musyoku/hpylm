@@ -18,7 +18,7 @@ using namespace std;
 
 class Vocab{
 private:
-	unordered_map<id, wstring, token_hash_func> _string_by_token_id;
+	unordered_map<id, wstring> _string_by_token_id;
 	hash<wstring> _hash_func;
 	
 	friend class boost::serialization::access;

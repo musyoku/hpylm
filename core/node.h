@@ -88,8 +88,8 @@ private:
 	}
 public:
 	static id _auto_increment;						// identifier用 VPYLMとは無関係
-	unordered_map<id, Node*, token_hash_func> _children;				// 子の文脈木
-	unordered_map<id, vector<int>, token_hash_func> _arrangement;	// 客の配置 vector<int>のk番目の要素がテーブルkの客数を表す
+	unordered_map<id, Node*> _children;				// 子の文脈木
+	unordered_map<id, vector<int>> _arrangement;	// 客の配置 vector<int>のk番目の要素がテーブルkの客数を表す
 	Node* _parent;									// 親ノード
 	int _num_tables;								// 総テーブル数
 	int _num_customers;								// 客の総数
