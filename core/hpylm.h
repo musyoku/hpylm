@@ -279,7 +279,7 @@ public:
 	bool save(string filename = "hpylm.model"){
 		std::ofstream ofs(filename);
 		boost::archive::binary_oarchive oarchive(ofs);
-		oarchive << static_cast<const HPYLM&>(*this);
+		oarchive << *this;
 		return true;
 	}
 	bool load(string filename = "hpylm.model"){
