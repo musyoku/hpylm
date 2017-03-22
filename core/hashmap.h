@@ -9,11 +9,6 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/serialization/split_free.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/collection_size_type.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/version.hpp>
-#include <boost/serialization/item_version_type.hpp>
 #include <cstdlib>
 #include <cassert>
 #include <iterator>
