@@ -1,5 +1,4 @@
-#ifndef _hpylm_
-#define _hpylm_
+#pragma once
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -297,5 +296,3 @@ public:
 		return true;
 	}
 };
-
-#endif

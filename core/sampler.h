@@ -1,5 +1,4 @@
-#ifndef _sampler_
-#define _sampler_
+#pragma once
 #include <random>
 
 using namespace std;
@@ -38,5 +37,3 @@ int seed = chrono::system_clock::now().time_since_epoch().count();
 // int seed = 0;
 mt19937 Sampler::mt(seed);
 default_random_engine Sampler::rand_gen(seed);
-
-#endif

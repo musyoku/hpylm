@@ -51,7 +51,7 @@ public:
 	int _sum_word_count;
 	bool _gibbs_first_addition;
 	PyHPYLM(){
-		init(0);
+		init(3);
 	}
 	PyHPYLM(int ngram){
 		init(ngram);
