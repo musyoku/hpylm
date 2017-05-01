@@ -3,9 +3,9 @@
 #include <iostream>
 #include <string>
 #include <unordered_map> 
-#include "core/node.h"
-#include "core/hpylm.h"
-#include "core/vocab.h"
+#include "src/node.h"
+#include "src/hpylm.h"
+#include "src/vocab.h"
 
 using namespace boost;
 
@@ -74,44 +74,44 @@ public:
 		_gibbs_first_addition = true;
 		_sum_word_count = 0;
 	}
-	bool load_textfile(string filename, int train_split){
+	bool load_textfile(string filename, double train_split_ratio){
 		wifstream ifs(filename.c_str());
-		wstring line_str;
+		wstring sentence;
 		if(ifs.fail()){
 			return false;
 		}
 		vector<wstring> lines;
-		while (getline(ifs, line_str) && !line_str.empty()){
+		while (getline(ifs, sentence) && !sentence.empty()){
 			if (PyErr_CheckSignals() != 0) {		// ctrl+cが押されたかチェック
 				return false;
 			}
-			lines.push_back(line_str);
+			lines.push_back(sentence);
 		}
-		assert(lines.size() > train_split);
 		vector<int> rand_indices;
 		for(int i = 0;i < lines.size();i++){
 			rand_indices.push_back(i);
 		}
-		shuffle(rand_indices.begin(), rand_indices.end(), Sampler::mt);	// データをシャッフル
+		int train_split = lines.size() * train_split_ratio;
+		shuffle(rand_indices.begin(), rand_indices.end(), sampler::mt);	// データをシャッフル
 		for(int i = 0;i < rand_indices.size();i++){
-			wstring &line_str = lines[rand_indices[i]];
+			wstring &sentence = lines[rand_indices[i]];
 			if(i < train_split){
-				add_train_data(line_str);
+				add_train_data(sentence);
 			}else{
-				add_test_data(line_str);
+				add_test_data(sentence);
 			}
 		}
 		return true;
 	}
-	void add_train_data(wstring line_str){
-		_add_data_to(line_str, _dataset_train);
+	void add_train_data(wstring sentence){
+		_add_data_to(sentence, _dataset_train);
 	}
-	void add_test_data(wstring line_str){
-		_add_data_to(line_str, _dataset_test);
+	void add_test_data(wstring sentence){
+		_add_data_to(sentence, _dataset_test);
 	}
-	void _add_data_to(wstring &line_str, vector<vector<id>> &dataset){
+	void _add_data_to(wstring &sentence, vector<vector<id>> &dataset){
 		vector<wstring> word_str_array;
-		split_word_by(line_str, L' ', word_str_array);	// スペースで分割
+		split_word_by(sentence, L' ', word_str_array);	// スペースで分割
 		if(word_str_array.size() > 0){
 			vector<id> words;
 			for(int i = 0;i < _hpylm->_depth;i++){
@@ -150,7 +150,7 @@ public:
 				_rand_indices.push_back(data_index);
 			}
 		}
-		shuffle(_rand_indices.begin(), _rand_indices.end(), Sampler::mt);	// データをシャッフル
+		shuffle(_rand_indices.begin(), _rand_indices.end(), sampler::mt);	// データをシャッフル
 		for(int n = 0;n < _dataset_train.size();n++){
 			if (PyErr_CheckSignals() != 0) {		// ctrl+cが押されたかチェック
 				return;
@@ -257,9 +257,9 @@ public:
 				return 0;
 			}
 			vector<id> &token_ids = dataset[data_index];
-			log_Pdataset += _hpylm->compute_log_Pw(token_ids) / token_ids.size();
+			log_Pdataset += _hpylm->compute_log2_Pw(token_ids) / (token_ids.size() - _hpylm->_depth);
 		}
-		return exp(-log_Pdataset / (double)dataset.size());
+		return pow(2.0, -log_Pdataset / (double)dataset.size());
 	}
 	wstring generate_sentence(){
 		std::vector<id> context_token_ids;
@@ -269,7 +269,7 @@ public:
 		for(int n = 0;n < 1000;n++){
 			id next_id = _hpylm->sample_next_token(context_token_ids);
 			if(next_id == ID_EOS){
-				vector<id> token_ids(context_token_ids.begin() + _hpylm->_depth + 1, context_token_ids.end());
+				vector<id> token_ids(context_token_ids.begin() + _hpylm->_depth, context_token_ids.end());
 				return _vocab->token_ids_to_sentence(token_ids);
 			}
 			context_token_ids.push_back(next_id);

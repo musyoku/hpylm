@@ -66,6 +66,7 @@ public:
 	bool add_customer_at_timestep(vector<id> &token_ids, int token_t_index){
 		Node* node = find_node_by_tracing_back_context(token_ids, token_t_index, _depth, true);
 		assert(node != NULL);
+		assert(node->_depth == _depth);
 		id token_t = token_ids[token_t_index];
 		node->add_customer(token_t, _g0, _d_m, _theta_m);
 		return true;
@@ -73,6 +74,7 @@ public:
 	bool remove_customer_at_timestep(vector<id> &token_ids, int token_t_index){
 		Node* node = find_node_by_tracing_back_context(token_ids, token_t_index, _depth, false);
 		assert(node != NULL);
+		assert(node->_depth == _depth);
 		id token_t = token_ids[token_t_index];
 		node->remove_customer(token_t);
 		// 客が一人もいなくなったらノードを削除する
@@ -125,8 +127,8 @@ public:
 		assert(token_ids.size() >= _depth + 1);
 		double mult_pw_h = 1;
 		vector<id> context_token_ids(token_ids.begin(), token_ids.begin() + _depth);
-		for(int depth = _depth;depth < token_ids.size();depth++){
-			id token_id = token_ids[depth];
+		for(int t = _depth;t < token_ids.size();t++){
+			id token_id = token_ids[t];
 			mult_pw_h *= compute_Pw_h(token_id, context_token_ids);;
 			context_token_ids.push_back(token_id);
 		}
@@ -136,8 +138,8 @@ public:
 		assert(token_ids.size() >= _depth + 1);
 		double sum_pw_h = 0;
 		vector<id> context_token_ids(token_ids.begin(), token_ids.begin() + _depth);
-		for(int depth = _depth;depth < token_ids.size();depth++){
-			id token_id = token_ids[depth];
+		for(int t = _depth;t < token_ids.size();t++){
+			id token_id = token_ids[t];
 			double pw_h = compute_Pw_h(token_id, context_token_ids);
 			assert(pw_h > 0);
 			sum_pw_h += log(pw_h);
@@ -149,8 +151,8 @@ public:
 		assert(token_ids.size() >= _depth + 1);
 		double sum_pw_h = 0;
 		vector<id> context_token_ids(token_ids.begin(), token_ids.begin() + _depth);
-		for(int depth = _depth;depth < token_ids.size();depth++){
-			id token_id = token_ids[depth];
+		for(int t = _depth;t < token_ids.size();t++){
+			id token_id = token_ids[t];
 			double pw_h = compute_Pw_h(token_id, context_token_ids);
 			assert(pw_h > 0);
 			sum_pw_h += log2(pw_h);
@@ -159,9 +161,9 @@ public:
 		return sum_pw_h;
 	}
 	id sample_next_token(vector<id> &context_token_ids){
-		id eos_id = ID_EOS;
 		Node* node = find_node_by_tracing_back_context(context_token_ids, context_token_ids.size(), _depth, false, true);
 		assert(node != NULL);
+		assert(node->_depth == _depth);
 		vector<id> token_ids;
 		vector<double> pw_h_array;
 		double sum = 0;
@@ -175,13 +177,13 @@ public:
 			}
 		}
 		if(token_ids.size() == 0){
-			return eos_id;
+			return ID_EOS;
 		}
 		if(sum == 0){
-			return eos_id;
+			return ID_EOS;
 		}
 		double normalizer = 1.0 / sum;
-		double bernoulli = Sampler::uniform(0, 1);
+		double bernoulli = sampler::uniform(0, 1);
 		double stack = 0;
 		for(int i = 0;i < token_ids.size();i++){
 			stack += pw_h_array[i] * normalizer;
@@ -227,8 +229,8 @@ public:
 		sum_auxiliary_variables_recursively(_root, sum_log_x_u_m, sum_y_ui_m, sum_1_y_ui_m, sum_1_z_uwkj_m);
 
 		for(int u = 0;u <= _depth;u++){
-			_d_m[u] = Sampler::beta(_a_m[u] + sum_1_y_ui_m[u], _b_m[u] + sum_1_z_uwkj_m[u]);
-			_theta_m[u] = Sampler::gamma(_alpha_m[u] + sum_y_ui_m[u], _beta_m[u] - sum_log_x_u_m[u]);
+			_d_m[u] = sampler::beta(_a_m[u] + sum_1_y_ui_m[u], _b_m[u] + sum_1_z_uwkj_m[u]);
+			_theta_m[u] = sampler::gamma(_alpha_m[u] + sum_y_ui_m[u], _beta_m[u] - sum_log_x_u_m[u]);
 		}
 	}
 	int get_num_nodes(){

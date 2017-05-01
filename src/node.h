@@ -162,8 +162,7 @@ public:
 		sum += (theta_u + d_u * t_u) * parent_Pw;
 
 		double normalizer = 1.0 / sum;
-		uniform_real_distribution<double> rand(0, 1);
-		double bernoulli = rand(Sampler::mt);
+		double bernoulli = sampler::uniform(0, 1);
 		double stack = 0;
 		for(int k = 0;k < num_customers_at_table.size();k++){
 			stack += std::max(0.0, num_customers_at_table[k] - d_u) * normalizer;
@@ -187,8 +186,7 @@ public:
 		vector<int> &num_customers_at_table = itr->second;
 		double sum = std::accumulate(num_customers_at_table.begin(), num_customers_at_table.end(), 0);		
 		double normalizer = 1.0 / sum;
-		uniform_real_distribution<double> rand(0, 1);
-		double bernoulli = rand(Sampler::mt);
+		double bernoulli = sampler::uniform(0, 1);
 		double stack = 0;
 		for(int k = 0;k < num_customers_at_table.size();k++){
 			stack += num_customers_at_table[k] * normalizer;
@@ -368,7 +366,7 @@ public:
 	// http://www.gatsby.ucl.ac.uk/~ywteh/research/compling/hpylm.pdf
 	double auxiliary_log_x_u(double theta_u){
 		if(_num_customers >= 2){
-			double x_u = Sampler::beta(theta_u + 1, _num_customers - 1);
+			double x_u = sampler::beta(theta_u + 1, _num_customers - 1);
 			return log(x_u + 1e-8);
 		}
 		return 0;
@@ -379,7 +377,7 @@ public:
 			for(int i = 1;i <= _num_tables - 1;i++){
 				double denominator = theta_u + d_u * i;
 				assert(denominator > 0);
-				sum_y_ui += Sampler::bernoulli(theta_u / denominator);;
+				sum_y_ui += sampler::bernoulli(theta_u / denominator);;
 			}
 			return sum_y_ui;
 		}
@@ -391,7 +389,7 @@ public:
 			for(int i = 1;i <= _num_tables - 1;i++){
 				double denominator = theta_u + d_u * i;
 				assert(denominator > 0);
-				sum_1_y_ui += 1.0 - Sampler::bernoulli(theta_u / denominator);
+				sum_1_y_ui += 1.0 - sampler::bernoulli(theta_u / denominator);
 			}
 			return sum_1_y_ui;
 		}
@@ -409,7 +407,7 @@ public:
 				if(c_uwk >= 2){
 					for(int j = 1;j <= c_uwk - 1;j++){
 						assert(j - d_u > 0);
-						sum_z_uwkj += 1 - Sampler::bernoulli((j - 1) / (j - d_u));
+						sum_z_uwkj += 1 - sampler::bernoulli((j - 1) / (j - d_u));
 					}
 				}
 			}
