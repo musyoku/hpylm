@@ -17,11 +17,11 @@ make install
 
 ## 学習
 
-`-f`でファイルを指定、`-l`で何行を訓練データにするかを指定します。
+`-f`でファイルを指定、`-split`でデータ全体の何割を学習に用いるかを指定します。
 
 ```
-python train_en.py -f dataset/alice.txt -l 1100
-python train_en.py -f dataset/wiki.txt -l 45000
+python train_en.py -f dataset/alice.txt -split 0.9
+python train_en.py -f dataset/wiki.txt -split 0.8
 ```
 
 ## 生成
