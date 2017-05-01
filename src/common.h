@@ -5,7 +5,7 @@ template<class T, class U>
 // using hashmap = std::unordered_map<T, U>;
 using hashmap = emilib::HashMap<T, U>;
 
-#define HPYLM_INITIAL_D 	0.2
+#define HPYLM_INITIAL_D 	0.5
 #define HPYLM_INITIAL_THETA 2.0
 #define HPYLM_INITIAL_A 	1.0
 #define HPYLM_INITIAL_B 	1.0
