@@ -4,6 +4,7 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/serialization/vector.hpp>
+#include <unordered_set>
 #include <vector>
 #include <cassert>
 #include <fstream>
@@ -160,15 +161,16 @@ public:
 		}
 		return sum_pw_h;
 	}
-	id sample_next_token(vector<id> &context_token_ids){
+	id sample_next_token(vector<id> &context_token_ids, unordered_set<id> &all_token_ids){
 		Node* node = find_node_by_tracing_back_context(context_token_ids, context_token_ids.size(), _depth, false, true);
 		assert(node != NULL);
-		assert(node->_depth == _depth);
 		vector<id> token_ids;
 		vector<double> pw_h_array;
 		double sum = 0;
-		for(auto elem: node->_arrangement){
-			id token_id = elem.first;
+		for(id token_id: all_token_ids){
+			if(token_id == ID_BOS){
+				continue;
+			}
 			double pw_h = compute_Pw_h(token_id, context_token_ids);
 			if(pw_h > 0){
 				token_ids.push_back(token_id);
